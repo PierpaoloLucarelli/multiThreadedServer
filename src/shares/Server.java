@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  *
  * @author plucarelli
  */
-public class Server {
+public class Server implements Runnable{
     public ServerSocket socket;
     SharesMonitor m = new SharesMonitor();
 
@@ -27,6 +27,7 @@ public class Server {
         }
     }
     
+    @Override
     public void run(){
         while(true) { 
                 Socket incoming;

@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -32,6 +34,7 @@ public class ClientRequest implements Runnable{
         System.out.println("I am running");
         this.connectionInit();
         this.printShares();
+        this.printComands();
         while(!done){
             String input="";
             try { input = in.readLine();
@@ -44,9 +47,16 @@ public class ClientRequest implements Runnable{
                         break;
                     case "SELL":
                         this.sellShare(comand[1], comand[2]);
+                        break;
+                    case "QUIT":
+                        done = true;
+                        break;
                 }
+            } else {
+                out.println("Invalid Command");
             }
         }
+        closeConnection();
     }
     
     public void connectionInit(){
@@ -67,10 +77,12 @@ public class ClientRequest implements Runnable{
         ShareMarket m = ShareMarket.getInstance();
         Share boughtShare = m.buyShare(share, quantity);
         monitor.exitCrit();
-        if(boughtShare!=null)
-            out.println("You have sucessfully bought the share: " + boughtShare.getCode());
+        if(boughtShare!=null){
+            out.println("ORDER CONFIRMED");
+            this.printComands();
+        }
         else out.println("Purchase unsucessfull not enough shares available");
-        printShares();
+//        printShares();
     }
     
     public void sellShare(String share, String numShares){
@@ -79,8 +91,8 @@ public class ClientRequest implements Runnable{
         ShareMarket m = ShareMarket.getInstance();
         m.sellShare(share, quantity);
         monitor.exitCrit();
-        out.println("Sold " + quantity + " " + share + " shares");
-        printShares();
+        out.println("SOLD CORRECTLY");
+        printComands();
     }
     
     public void printShares(){
@@ -88,7 +100,15 @@ public class ClientRequest implements Runnable{
         out.println(m);
     }
     
+    public void printComands(){
+        out.println("Enter a buy/sell order in format BUY/SELL stockname number"
+                + ", or\n enter QUIT to quit:");
+    }
     
-    
+    public void closeConnection(){
+        try {
+            incoming.close() ;
+        } catch (IOException ex) {}
+    } 
     
 }

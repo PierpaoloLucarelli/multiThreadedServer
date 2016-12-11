@@ -29,5 +29,6 @@ public class ShareMarketTests {
         
         // test market toString()
         System.out.println("\nUpdated market: \n-------\n"+m);
+        System.out.println(m.generateLabelText());
     }
 }

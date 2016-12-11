@@ -4,12 +4,15 @@
  * and open the template in the editor.
  */
 package shares;
+import java.time.chrono.ThaiBuddhistChronology;
+import javax.swing.SwingUtilities;
 
 /**
  *
  * @author plucarelli
  */
 public class RunApplication {
+    
     public static void main(String[] args){
         
         ShareMarket shares = ShareMarket.getInstance();
@@ -24,7 +27,7 @@ public class RunApplication {
         shares.addShare(tsco, tsco.getCode());
         shares.addShare(vod, vod.getCode());
         
-        Server s = new Server();
-        s.run();
+        Thread s = new Thread(new Server());
+        s.start();
     }
 }
