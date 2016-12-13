@@ -13,15 +13,17 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.SwingUtilities;
+import static shares.AdminGUI.serverInfo;
 
 /**
  *
  * @author plucarelli
  */
 public class ClientRequest implements Runnable{
-    private Socket incoming;
+    private final Socket incoming;
     private final DateFormat dateFormat;
-    private SharesMonitor monitor;
+    private final SharesMonitor monitor;
     private BufferedReader in;
     private PrintWriter out;
     private boolean done = false;
@@ -41,7 +43,9 @@ public class ClientRequest implements Runnable{
         while(!done){
             String input="";
             try { input = in.readLine();
-            } catch (IOException ex){}
+            } catch (IOException ex){
+                System.out.println("check");
+            }
             String[] comand = input.split(" ", 3);
             if(comand[0].matches("BUY||SELL||QUIT")){
                 switch(comand[0]){
@@ -55,12 +59,11 @@ public class ClientRequest implements Runnable{
                         done = true;
                         break;
                 }
-            } else {
+            } else 
                 out.println("Invalid Command");
-            }
         }
         closeConnection();
-        AdminGUI.serverInfo.log("Client with IP " + incoming.getRemoteSocketAddress() 
+        updateGUI("Client with IP " + incoming.getRemoteSocketAddress() 
                 + " disconnected at time: "+ dateFormat.format(new Date()));
     }
     
@@ -85,7 +88,7 @@ public class ClientRequest implements Runnable{
         if(boughtShare!=null){
             out.println("ORDER CONFIRMED");
             this.printComands();
-            AdminGUI.serverInfo.log(quantity + " " + share + " shares BOUGHT at: " 
+            updateGUI(quantity + " " + share + " shares BOUGHT at: " 
                 + dateFormat.format(new Date()) + " from user " 
                 + incoming.getRemoteSocketAddress());
         }
@@ -100,7 +103,7 @@ public class ClientRequest implements Runnable{
         monitor.exitCrit();
         out.println("SOLD CORRECTLY");
         printComands();
-        AdminGUI.serverInfo.log(quantity + " " + share + " shares SOLD at: " 
+        updateGUI(quantity + " " + share + " shares SOLD at: " 
                 + dateFormat.format(new Date()) + " from user " 
                 + incoming.getRemoteSocketAddress());
     }
@@ -120,5 +123,11 @@ public class ClientRequest implements Runnable{
             incoming.close() ;
         } catch (IOException ex) {}
     } 
+    
+    public void updateGUI(String log){
+        SwingUtilities.invokeLater(() -> {
+            serverInfo.log(log);
+        });
+    }
     
 }

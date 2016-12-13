@@ -4,8 +4,6 @@
  * and open the template in the editor.
  */
 package shares;
-import java.time.chrono.ThaiBuddhistChronology;
-import javax.swing.SwingUtilities;
 
 /**
  *

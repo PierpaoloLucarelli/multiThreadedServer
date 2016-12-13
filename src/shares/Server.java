@@ -10,16 +10,23 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import static shares.AdminGUI.serverInfo;
+
 
 /**
  *
  * @author plucarelli
  */
 public class Server implements Runnable{
-    public ServerSocket socket;
+    private List<Thread> children = new ArrayList();
+    private ServerSocket socket;
+    private Socket incoming;
     private DateFormat dateFormat;
     private final int PORTNUMBER = 8189;
     SharesMonitor m = new SharesMonitor();
@@ -37,14 +44,14 @@ public class Server implements Runnable{
     
     @Override
     public void run(){
-        while(running) { 
-                Socket incoming;
+        while(running) {
             try {
                 incoming = socket.accept();
                 ClientRequest req = new ClientRequest(incoming, m);
                 Thread t = new Thread(req);
+                children.add(t);
                 t.start();
-                AdminGUI.serverInfo.log("Connected client to port: " +
+                updateGUI("Connected client to port: " +
                         PORTNUMBER + " at: " + dateFormat.format(new Date()) + "with IP of" +
                         incoming.getRemoteSocketAddress());
             } catch (IOException ex) {
@@ -57,10 +64,17 @@ public class Server implements Runnable{
         try {
             running = false;
             this.socket.close();
+            children.stream().forEach((t) -> {
+                t.interrupt();
+            });
         } catch (IOException ex) {
             System.out.println("Error stopping server");
         }
     }
     
-    
+    public void updateGUI(String log){
+        SwingUtilities.invokeLater(() -> {
+            serverInfo.log(log);
+        });
+    }
 }
