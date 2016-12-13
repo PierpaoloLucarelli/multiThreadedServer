@@ -10,8 +10,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
  */
 public class ClientRequest implements Runnable{
     private Socket incoming;
+    private final DateFormat dateFormat;
     private SharesMonitor monitor;
     private BufferedReader in;
     private PrintWriter out;
@@ -27,6 +29,7 @@ public class ClientRequest implements Runnable{
     public ClientRequest(Socket incoming, SharesMonitor m){
         this.incoming = incoming;
         this.monitor = m;
+        this.dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     }
 
     @Override
@@ -57,6 +60,8 @@ public class ClientRequest implements Runnable{
             }
         }
         closeConnection();
+        AdminGUI.serverInfo.log("Client with IP " + incoming.getRemoteSocketAddress() 
+                + " disconnected at time: "+ dateFormat.format(new Date()));
     }
     
     public void connectionInit(){
@@ -80,9 +85,11 @@ public class ClientRequest implements Runnable{
         if(boughtShare!=null){
             out.println("ORDER CONFIRMED");
             this.printComands();
+            AdminGUI.serverInfo.log(quantity + " " + share + " shares BOUGHT at: " 
+                + dateFormat.format(new Date()) + " from user " 
+                + incoming.getRemoteSocketAddress());
         }
         else out.println("Purchase unsucessfull not enough shares available");
-//        printShares();
     }
     
     public void sellShare(String share, String numShares){
@@ -93,6 +100,9 @@ public class ClientRequest implements Runnable{
         monitor.exitCrit();
         out.println("SOLD CORRECTLY");
         printComands();
+        AdminGUI.serverInfo.log(quantity + " " + share + " shares SOLD at: " 
+                + dateFormat.format(new Date()) + " from user " 
+                + incoming.getRemoteSocketAddress());
     }
     
     public void printShares(){

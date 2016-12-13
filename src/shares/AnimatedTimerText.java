@@ -25,7 +25,6 @@ public class AnimatedTimerText extends JLabel{
     private TimerTask timerTask;
 
     public AnimatedTimerText() {
-        setPreferredSize(new Dimension(200,200));
         timer = new Timer(true);
         timerTask = new TimerTask(){
             @Override
