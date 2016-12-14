@@ -58,8 +58,7 @@ public class Server implements Runnable{
     
     @Override
     public void run(){
-        while(running && !Thread.currentThread().isInterrupted()) {
-            System.out.println(Thread.currentThread().isInterrupted());
+        while(running) {
             try {
                 incoming = socket.accept();
                 ClientRequest req = new ClientRequest(incoming, m);
@@ -73,7 +72,6 @@ public class Server implements Runnable{
                 System.out.println("Server has been interrupted");
             }
         }
-        stop();
     }
     
     public void stop(){
@@ -81,13 +79,13 @@ public class Server implements Runnable{
             running = false;
             pool.shutdownNow();
             this.socket.close();
-//            children.stream().forEach((t) -> {
-//                try {
-//                    t.close();
-//                } catch (IOException ex) {
-//                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            });
+            children.stream().forEach((t) -> {
+                try {
+                    t.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
             while (!pool.isTerminated()){}
         } catch (IOException ex) {
             System.out.println("Error stopping server");
