@@ -85,10 +85,9 @@ public final class AdminGUI extends JFrame{
         stopServer = new JButton(new AbstractAction("stop"){
             @Override
             public void actionPerformed(ActionEvent e){
-                server.stop();
+                worker.interrupt();
                 serverInfo.log("Server Stopped at: " 
                         + dateFormat.format(new Date()));
-                worker.interrupt();
             }
         });
         

@@ -5,6 +5,8 @@
         <group>
             <file>file:/Users/plucarelli/NetBeansProjects/MarketShares/src/shares/RunApplication.java</file>
             <file>file:/Users/plucarelli/NetBeansProjects/MarketShares/src/shares/ClientRequest.java</file>
+            <file>file:/Users/plucarelli/NetBeansProjects/MarketShares/src/shares/Share.java</file>
+            <file>file:/Users/plucarelli/NetBeansProjects/MarketShares/src/shares/ShareMarketTests.java</file>
             <file>file:/Users/plucarelli/NetBeansProjects/MarketShares/src/shares/ShareMarket.java</file>
             <file>file:/Users/plucarelli/NetBeansProjects/MarketShares/src/shares/AdminGUI.java</file>
             <file>file:/Users/plucarelli/NetBeansProjects/MarketShares/src/shares/Server.java</file>

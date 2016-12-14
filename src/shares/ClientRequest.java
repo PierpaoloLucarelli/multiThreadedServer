@@ -35,12 +35,12 @@ public class ClientRequest implements Runnable{
     }
 
     @Override
-    public void run() {
-        System.out.println("I am running");
+    public void run(){
         this.connectionInit();
         this.printShares();
         this.printComands();
-        while(!done){
+        while(!done && !incoming.isClosed()){
+            System.out.println(incoming.isClosed());
             String input="";
             try { input = in.readLine();
             } catch (IOException ex){
