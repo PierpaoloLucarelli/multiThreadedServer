@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import static shares.AdminGUI.serverInfo;
 
 
@@ -26,13 +27,13 @@ import static shares.AdminGUI.serverInfo;
  *
  * @author plucarelli
  */
-public class Server implements Runnable{
+public class Server extends SwingWorker{
     private List<Socket> children = new ArrayList();
     private ServerSocket socket;
     private Socket incoming;
     private DateFormat dateFormat;
     private final int PORTNUMBER = 8189;
-    SharesMonitor m = new SharesMonitor();
+    private SharesMonitor m = new SharesMonitor();
     private volatile boolean running;
     private ThreadPoolExecutor pool;
     private final int NTHREADS = 4;
@@ -56,27 +57,8 @@ public class Server implements Runnable{
         }
     }
     
-    @Override
-    public void run(){
-        while(running) {
-            try {
-                incoming = socket.accept();
-                ClientRequest req = new ClientRequest(incoming, m);
-                Thread t = new Thread(req);
-                children.add(incoming);
-                pool.submit(t);
-                updateGUI("Connected client to port: " +
-                        PORTNUMBER + " at: " + dateFormat.format(new Date()) + "with IP of" +
-                        incoming.getRemoteSocketAddress());
-            } catch (IOException ex) {
-                System.out.println("Server has been interrupted");
-            }
-        }
-    }
-    
     public void stop(){
         try {
-            running = false;
             pool.shutdownNow();
             this.socket.close();
             children.stream().forEach((t) -> {
@@ -86,15 +68,38 @@ public class Server implements Runnable{
                     Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
-            while (!pool.isTerminated()){}
         } catch (IOException ex) {
             System.out.println("Error stopping server");
         }
+    }
+
+    public ServerSocket getSocket() {
+        return socket;
     }
     
     public void updateGUI(String log){
         SwingUtilities.invokeLater(() -> {
             serverInfo.log(log);
         });
+    }
+
+    @Override
+    protected Object doInBackground(){
+         while(running) {
+            try {
+                incoming = socket.accept();
+                ClientRequest req = new ClientRequest(incoming, m);
+                Thread t = new Thread(req);
+                pool.submit(t);
+                children.add(incoming);
+                updateGUI("Connected client to port: " +
+                        PORTNUMBER + " at: " + dateFormat.format(new Date()) + "with IP of" +
+                        incoming.getRemoteSocketAddress());
+            } catch (IOException ex) {
+                running = false;
+            }
+        }
+        stop();
+        return null;
     }
 }

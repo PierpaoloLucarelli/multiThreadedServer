@@ -40,12 +40,9 @@ public class ClientRequest implements Runnable{
         this.printShares();
         this.printComands();
         while(!done && !incoming.isClosed()){
-            System.out.println(incoming.isClosed());
             String input="";
             try { input = in.readLine();
-            } catch (IOException ex){
-                System.out.println("check");
-            }
+            } catch (IOException ex){}
             String[] comand = input.split(" ", 3);
             if(comand[0].matches("BUY||SELL||QUIT")){
                 switch(comand[0]){
@@ -120,6 +117,7 @@ public class ClientRequest implements Runnable{
     
     public void closeConnection(){
         try {
+            System.out.println("closed");
             incoming.close() ;
         } catch (IOException ex) {}
     } 

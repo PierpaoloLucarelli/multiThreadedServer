@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,7 +41,7 @@ public final class AdminGUI extends JFrame{
     public static ServerInfo serverInfo;
     private final DateFormat dateFormat;
     private JScrollPane scroll;
-    private Thread worker;
+//    private Thread worker;
     
     public AdminGUI() {
         this.dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -75,10 +76,9 @@ public final class AdminGUI extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e){
                 server = new Server();
+                server.execute();
                 serverInfo.log("Server Started at: " 
                         + dateFormat.format(new Date()));
-                worker = new Thread(server);
-                worker.start();
             }
         });
         
@@ -87,7 +87,9 @@ public final class AdminGUI extends JFrame{
             public void actionPerformed(ActionEvent e){
                 serverInfo.log("Server Stopped at: " 
                         + dateFormat.format(new Date()));
-                server.stop();
+                try {
+                    server.getSocket().close();
+                } catch (IOException ex) {}
             }
         });
         
@@ -124,7 +126,7 @@ public final class AdminGUI extends JFrame{
         shares.addShare(tsco, tsco.getCode());
         shares.addShare(vod, vod.getCode());
         
-         Runnable createAndShowGUI = () -> {
+        Runnable createAndShowGUI = () -> {
             new AdminGUI();
         };
         
