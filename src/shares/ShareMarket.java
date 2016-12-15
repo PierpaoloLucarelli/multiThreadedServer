@@ -28,14 +28,20 @@ public class ShareMarket {
     
     public Share buyShare(String share, int quantity){
         Share s = shares.get(share);
-        if(s.numAreAvailable(quantity)){
-            s.buy(quantity);
-            return new Share(s.getPrice(), s.getCode(), quantity);
+        if(s!=null){
+            if(s.numAreAvailable(quantity)){
+                s.buy(quantity);
+                return new Share(s.getPrice(), s.getCode(), quantity);
+            } return null;
         } return null;
     }
     
-    public void sellShare(String share, int quantity){
-        shares.get(share).sell(quantity);
+    public boolean sellShare(String share, int quantity){
+        Share s = shares.get(share);
+        if(s!=null){
+            s.sell(quantity);
+            return true;
+        } else return false;   
     }
     
     public void addShare(Share s, String code){

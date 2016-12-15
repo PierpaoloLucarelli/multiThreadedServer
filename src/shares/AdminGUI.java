@@ -40,10 +40,12 @@ public final class AdminGUI extends JFrame{
     private Server server;
     public static ServerInfo serverInfo;
     private final DateFormat dateFormat;
+    private SharesMonitor m;
     private JScrollPane scroll;
 //    private Thread worker;
     
     public AdminGUI() {
+        this.m = new SharesMonitor();
         this.dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         setTitle("Stock Makret Server Application");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -62,9 +64,11 @@ public final class AdminGUI extends JFrame{
         
         JPanel areas = new JPanel(new GridLayout(2,1));
         marketInfo = new JTextArea(ShareMarket.getInstance().toString());
+        marketInfo.setEditable(false);
         JPanel infoArea = new JPanel(new BorderLayout());
         infoArea.add(new JLabel("Real time shares"), BorderLayout.NORTH);
         serverInfo = new ServerInfo();
+        serverInfo.setEditable(false);
         scroll = new JScrollPane(serverInfo);
         infoArea.add(marketInfo, BorderLayout.CENTER);
         areas.add(scroll);
@@ -75,7 +79,7 @@ public final class AdminGUI extends JFrame{
         startServer = new JButton(new AbstractAction("start"){
             @Override
             public void actionPerformed(ActionEvent e){
-                server = new Server();
+                server = new Server(m);
                 server.execute();
                 serverInfo.log("Server Started at: " 
                         + dateFormat.format(new Date()));
@@ -99,7 +103,9 @@ public final class AdminGUI extends JFrame{
         timeTimer.start();
         
         sharesTimer = new javax.swing.Timer(100, (ActionEvent e) -> {
+            m.enterCrit();
             marketInfo.setText(ShareMarket.getInstance().toString());
+            m.exitCrit();
         });
         sharesTimer.start();
         

@@ -37,27 +37,32 @@ public class ClientRequest implements Runnable{
     @Override
     public void run(){
         this.connectionInit();
+        monitor.enterCrit();
         this.printShares();
+        monitor.exitCrit();
         this.printComands();
         while(!done && !incoming.isClosed()){
             String input="";
             try { input = in.readLine();
             } catch (IOException ex){}
-            String[] comand = input.split(" ", 3);
-            if(comand[0].matches("BUY||SELL||QUIT")){
-                switch(comand[0]){
-                    case "BUY":
-                        this.buyShare(comand[1],comand[2]);
-                        break;
-                    case "SELL":
-                        this.sellShare(comand[1], comand[2]);
-                        break;
-                    case "QUIT":
-                        done = true;
-                        break;
-                }
+            String[] comand = input.split(" ");
+            if(comand.length==3 || comand[0].equals("QUIT")){
+                if(comand[0].matches("BUY||SELL||QUIT")){
+                    switch(comand[0]){
+                        case "BUY":
+                            this.buyShare(comand[1],comand[2]);
+                            break;
+                        case "SELL":
+                            this.sellShare(comand[1], comand[2]);
+                            break;
+                        case "QUIT":
+                            done = true;
+                            break;
+                    }
+                } else 
+                    out.println("Invalid Command");
             } else 
-                out.println("Invalid Command");
+                    out.println("Invalid Command");
         }
         closeConnection();
         updateGUI("Client with IP " + incoming.getRemoteSocketAddress() 
@@ -78,31 +83,37 @@ public class ClientRequest implements Runnable{
     
     public void buyShare(String share, String numShares){
         int quantity = Integer.parseInt(numShares);
-        monitor.enterCrit();
-        ShareMarket m = ShareMarket.getInstance();
-        Share boughtShare = m.buyShare(share, quantity);
-        monitor.exitCrit();
-        if(boughtShare!=null){
-            out.println("ORDER CONFIRMED");
-            this.printComands();
-            updateGUI(quantity + " " + share + " shares BOUGHT at: " 
-                + dateFormat.format(new Date()) + " from user " 
-                + incoming.getRemoteSocketAddress());
-        }
-        else out.println("Purchase unsucessfull not enough shares available");
+        if(quantity>0){
+            monitor.enterCrit();
+            ShareMarket m = ShareMarket.getInstance();
+            Share boughtShare = m.buyShare(share, quantity);
+            monitor.exitCrit();
+            if(boughtShare!=null){
+                out.println("ORDER CONFIRMED");
+                this.printComands();
+                updateGUI(quantity + " " + share + " shares BOUGHT at: " 
+                    + dateFormat.format(new Date()) + " from user " 
+                    + incoming.getRemoteSocketAddress());
+            }
+            else out.println("Purchase unsucessfull");
+        } else out.println("Enter a number of shares bigger than 0");
     }
     
     public void sellShare(String share, String numShares){
         int quantity = Integer.parseInt(numShares);
-        monitor.enterCrit();
-        ShareMarket m = ShareMarket.getInstance();
-        m.sellShare(share, quantity);
-        monitor.exitCrit();
-        out.println("SOLD CORRECTLY");
-        printComands();
-        updateGUI(quantity + " " + share + " shares SOLD at: " 
-                + dateFormat.format(new Date()) + " from user " 
-                + incoming.getRemoteSocketAddress());
+        if(quantity>0){
+            monitor.enterCrit();
+            ShareMarket m = ShareMarket.getInstance();
+            boolean sold = m.sellShare(share, quantity);
+            monitor.exitCrit();
+            if(sold){
+                out.println("SOLD CORRECTLY");
+                printComands();
+                updateGUI(quantity + " " + share + " shares SOLD at: " 
+                        + dateFormat.format(new Date()) + " from user " 
+                        + incoming.getRemoteSocketAddress());
+            } else out.println("Something went wrong");
+        } else out.println("Enter a number of shares bigger than 0");
     }
     
     public void printShares(){

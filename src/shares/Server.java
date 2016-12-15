@@ -33,13 +33,14 @@ public class Server extends SwingWorker{
     private Socket incoming;
     private DateFormat dateFormat;
     private final int PORTNUMBER = 8189;
-    private SharesMonitor m = new SharesMonitor();
+    private SharesMonitor m;
     private volatile boolean running;
     private ThreadPoolExecutor pool;
-    private final int NTHREADS = 4;
+    private final int NTHREADS = 10;
     private static final int QSIZE = 10; 
 
-    public Server() {
+    public Server(SharesMonitor m) {
+        this.m = m;
          pool = new ThreadPoolExecutor(
               NTHREADS,                 // core pool size 
               NTHREADS,                 // maximum pool size     
@@ -64,9 +65,7 @@ public class Server extends SwingWorker{
             children.stream().forEach((t) -> {
                 try {
                     t.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                } catch (IOException ex) {}
             });
         } catch (IOException ex) {
             System.out.println("Error stopping server");

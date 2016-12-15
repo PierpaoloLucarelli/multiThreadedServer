@@ -25,7 +25,7 @@ public class RunApplication {
         shares.addShare(tsco, tsco.getCode());
         shares.addShare(vod, vod.getCode());
         
-        Thread s = new Thread(new Server());
-        s.start();
+//        Thread s = new Thread(new Server());
+//        s.start();
     }
 }
