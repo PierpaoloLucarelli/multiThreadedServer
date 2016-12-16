@@ -1,14 +1,10 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Pierpaolo Lucarelli 1400571
+ * CM3033 Coursework 2016/2017
+ * MultiThreaded Java server and Admin GUI
  */
 package shares;
 
-/**
- *
- * @author plucarelli
- */
 public class Share {
     
     private double price;
@@ -23,14 +19,16 @@ public class Share {
         this.numAvailable = numAvailable;
     }
     
+    // check if the number of required shares is available
     public boolean numAreAvailable(int numShares){
         return numAvailable >= numShares;
     }
-    
+    // buy a share
     public void buy(int numShares){
         this.numAvailable -= numShares;
     }
     
+    // sell share
     public void sell(int numShares){
         this.numAvailable+=numShares;
     }

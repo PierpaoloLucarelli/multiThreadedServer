@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Pierpaolo Lucarelli 1400571
+ * CM3033 Coursework 2016/2017
+ * MultiThreaded Java server and Admin GUI
  */
 package shares;
 
@@ -23,10 +23,6 @@ import javax.swing.SwingWorker;
 import static shares.AdminGUI.serverInfo;
 
 
-/**
- *
- * @author plucarelli
- */
 public class Server extends SwingWorker{
     private List<Socket> children = new ArrayList();
     private ServerSocket socket;
@@ -36,32 +32,58 @@ public class Server extends SwingWorker{
     private SharesMonitor m;
     private volatile boolean running;
     private ThreadPoolExecutor pool;
-    private final int NTHREADS = 10;
-    private static final int QSIZE = 10; 
+    private final int NTHREADS = 4; // Limit of clients connected
+    private static final int QSIZE = 10; // 
 
+    // Create a ThredPoolExecutor to run the client connections
     public Server(SharesMonitor m) {
         this.m = m;
          pool = new ThreadPoolExecutor(
-              NTHREADS,                 // core pool size 
-              NTHREADS,                 // maximum pool size     
-              50000L,                   // time to keep idle threads alive
-              TimeUnit.MILLISECONDS,    // unit for time
-              new LinkedBlockingQueue<>(QSIZE)  // queue used to hold tasks
+              NTHREADS,
+              NTHREADS,
+              50000L,  
+              TimeUnit.MILLISECONDS,   
+              new LinkedBlockingQueue<>(QSIZE)
         );
         pool.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy()); 
         this.dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         running = true;
         try {
+            // create serversocket on port 
             this.socket = new ServerSocket(PORTNUMBER) ;
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
+    // as this class extends from swingWorker we will implemnet the doInBackgorund method
+    // this ensures that the EDT is not blocked when GUI starts Server
+    @Override 
+    protected Object doInBackground(){
+         while(running) {
+            try {
+                incoming = socket.accept(); // will cause excpt when GUI closes socket
+                ClientRequest req = new ClientRequest(incoming, m);
+                Thread t = new Thread(req);
+                pool.submit(t); // submit the client connection to the pool
+                children.add(incoming);
+                updateGUI("Connected client to port: " +
+                        PORTNUMBER + " at: " + dateFormat.format(new Date()) + "with IP of" +
+                        incoming.getRemoteSocketAddress());
+            } catch (IOException ex) {
+                running = false; // stop the while loop
+            }
+        }
+        stop(); // close connections
+        return null;
+    }
+    
     public void stop(){
         try {
+            // shutdown the pool
             pool.shutdownNow();
             this.socket.close();
+            // disconnect each client
             children.stream().forEach((t) -> {
                 try {
                     t.close();
@@ -76,29 +98,12 @@ public class Server extends SwingWorker{
         return socket;
     }
     
+    // safely update GUI 
     public void updateGUI(String log){
         SwingUtilities.invokeLater(() -> {
             serverInfo.log(log);
         });
     }
 
-    @Override
-    protected Object doInBackground(){
-         while(running) {
-            try {
-                incoming = socket.accept();
-                ClientRequest req = new ClientRequest(incoming, m);
-                Thread t = new Thread(req);
-                pool.submit(t);
-                children.add(incoming);
-                updateGUI("Connected client to port: " +
-                        PORTNUMBER + " at: " + dateFormat.format(new Date()) + "with IP of" +
-                        incoming.getRemoteSocketAddress());
-            } catch (IOException ex) {
-                running = false;
-            }
-        }
-        stop();
-        return null;
-    }
+ 
 }

@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Pierpaolo Lucarelli 1400571
+ * CM3033 Coursework 2016/2017
+ * MultiThreaded Java server and Admin GUI
  */
 package shares;
 
@@ -9,19 +9,16 @@ import javax.swing.JTextArea;
 
 
 
-/**
- *
- * @author plucarelli
- */
+
 public class ServerInfo extends JTextArea{
 
-    private JTextArea text;
+    private JTextArea text; // this will contain the information about the Shares 
     
     public ServerInfo() {
         text = new JTextArea();
     }
     
-    public void log(String l){
+    public void log(String l){ // method for logging text to the textarea
         setText(this.getText() + l + "\n");
     }
     
